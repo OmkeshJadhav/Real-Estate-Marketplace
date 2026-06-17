@@ -4,6 +4,10 @@ import mongoose from "mongoose";
 import dotenv from 'dotenv';
 import { log } from "node:console";
 import connectToDB from './database/db.js'
+import globalErrorHandler from "./middlewares/globalErrorHandler.js";
+
+import userRouter from "./routes/user.route.js"
+import authRouter from "./routes/auth.route.js"
 
 dotenv.config();
 
@@ -11,6 +15,11 @@ const PORT = process.env.PORT
 const app = express()
 
 app.use(express.json())
+
+app.use('/api/auth', authRouter)
+app.use('/api/user', userRouter)
+
+app.use(globalErrorHandler)
 
 const startServer = async () => {
     try {
