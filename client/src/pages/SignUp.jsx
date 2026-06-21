@@ -100,9 +100,14 @@ const SignUp = () => {
                     value={formData.password}
                     placeholder="Enter Your Password"
                     className="border rounded-lg p-3 outline-none"
-                    autoComplete="new-password webauthn"
                     onChange={handleInputChange}
                 />
+                {error ?
+                    <p className="text-red-500 mt-5">
+                        {error}
+                    </p>
+                    : null
+                }
                 <button
                     type="submit"
                     disabled={loading}
@@ -111,11 +116,6 @@ const SignUp = () => {
                     {loading ? "Loading....." : "Sign Up"}
                 </button>
             </form>
-            {error ?
-                <p className="text-red-500 mt-5">
-                    {error}
-                </p>
-                : null}
             <div className="flex gap-2 mt-5">
                 <p>Already have an account? </p>
                 <Link to="/sign-in"><span className="text-blue-700">Sign In</span></Link>
