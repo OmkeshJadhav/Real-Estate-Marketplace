@@ -1,18 +1,22 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
+import { signInStart, signInSuccess, signInFailure, clearError } from "../redux/user/userSlice"
 
 const SignIn = () => {
     const [formData, setFormData] = useState({
         identifier: "",
         password: "",
     })
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
+    // const [error, setError] = useState(null)
+    // const [loading, setLoading] = useState(false)
+    const { loading, error } = useSelector((state) => state.user)
 
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     const handleInputChange = (e) => {
-        setError(null)
+        dispatch(clearError());
 
         setFormData({
             ...formData,
@@ -24,13 +28,13 @@ const SignIn = () => {
         e.preventDefault()
 
         if (!formData.identifier || !formData.password) {
-            setError('All fields are mandatory')
+            // setError('All fields are mandatory')
+            dispatch(signInFailure('All fields are mandatory'))
             return;
         }
 
         try {
-            setLoading(true)
-            setError(null)
+            dispatch(signInStart())
 
             const res = await fetch('/api/auth/signin', {
                 method: 'POST',
@@ -46,6 +50,8 @@ const SignIn = () => {
                 throw new Error(data.message)
             }
 
+            dispatch(signInSuccess(data.data))
+
             setFormData({
                 identifier: "",
                 password: ""
@@ -55,9 +61,7 @@ const SignIn = () => {
 
         } catch (error) {
             console.log(error);
-            setError(error.message)
-        } finally {
-            setLoading(false)
+            dispatch(signInFailure(error.message))
         }
     }
 
