@@ -87,3 +87,74 @@ export const signIn = asyncHandler(async (req, res) => {
             },
         })
 })
+
+export const google = async (req, res, next) => {
+
+    try {
+        const user = await User.findOne({ email: req.body.email })
+
+        if (user) {
+            // sign in
+            const accessToken = generateAccessToken(user)
+
+            res
+                .cookie("accessToken", accessToken, {
+                    httpOnly: true,
+                    maxAge: 10 * 60 * 1000
+                    // secure: process.env.NODE_ENV === "production",
+                    // sameSite: "strict",
+                })
+                .status(200)
+                .json({
+                    success: true,
+                    message: `User logged in successfully.`,
+                    data: {
+                        _id: user._id,
+                        username: user.username,
+                        email: user.email
+                    },
+                })
+        } else {
+            // Sign up
+            const generateUserName = req.body.name.split(" ").join("").toLowerCase().toString(36).slice(-4)
+
+            const generatePassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8)
+
+            const salt = await bcrypt.genSalt(12)
+            const hashedPassword = await bcrypt.hash(generatePassword, salt)
+
+            const newUser = new User({
+                username: generateUserName,
+                email: req.body.email,
+                password: hashedPassword,
+                avatar: req.body.photo
+            })
+
+            await newUser.save()
+
+            const accessToken = generateAccessToken(user)
+
+            res
+                .cookie("accessToken", accessToken, {
+                    httpOnly: true,
+                    maxAge: 10 * 60 * 1000
+                    // secure: process.env.NODE_ENV === "production",
+                    // sameSite: "strict",
+                })
+                .status(200)
+                .json({
+                    success: true,
+                    message: `User logged in successfully.`,
+                    data: {
+                        _id: user._id,
+                        username: user.username,
+                        email: user.email,
+                        avatar: user.avatar
+                    },
+                })
+        }
+    }
+    catch (error) {
+        next(error)
+    }
+}
